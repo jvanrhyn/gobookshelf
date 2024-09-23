@@ -5,23 +5,27 @@ import (
 
 	"log/slog"
 
+	"github.com/jvanrhyn/bookfans/internal"
 	_ "github.com/lib/pq"
 )
 
 type (
 	Database struct {
-		db *sql.DB
+		db     *sql.DB
+		config *internal.Config
 	}
 )
 
-func New() *Database {
-	db, err := sql.Open("postgres", "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable")
+func New(config *internal.Config) *Database {
+
+	db, err := sql.Open("postgres", config.ConnectionString)
 	if err != nil {
 		panic(err)
 	}
 
 	dataBase := &Database{
-		db: db,
+		db:     db,
+		config: config,
 	}
 	return dataBase
 }

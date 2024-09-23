@@ -7,6 +7,8 @@ import (
 	"syscall"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
+	"github.com/jvanrhyn/bookfans/internal"
 	"github.com/jvanrhyn/bookfans/internal/controller"
 	"github.com/jvanrhyn/bookfans/internal/data"
 )
@@ -21,8 +23,12 @@ func init() {
 }
 
 func main() {
+
+	setupEnvironment()
+
+	config := GetConfig()
 	app := fiber.New()
-	database := data.New()
+	database := data.New(config)
 
 	slog.Debug("Initializing controllers")
 	controllers := []controller.ControllerInterface{
@@ -51,4 +57,20 @@ func main() {
 	if err != nil {
 		slog.Error(err.Error())
 	}
+}
+
+func GetConfig() *internal.Config {
+	config := internal.Config{
+		ConnectionString: os.Getenv("CONNECTION_STRING"),
+	}
+
+	return &config
+}
+
+func setupEnvironment() {
+	err := godotenv.Load()
+	if err != nil {
+		slog.Warn("Error loading .env file, falling back to OS configured variables")
+	}
+
 }
