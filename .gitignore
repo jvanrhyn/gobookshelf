@@ -21,6 +21,9 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+# Ignoring the vcs.xml
+vcs.xml
+
 # Go workspace file
 go.work
 
