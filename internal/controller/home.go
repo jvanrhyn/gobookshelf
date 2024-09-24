@@ -12,6 +12,14 @@ type HomeController struct {
 	Database *data.Database
 }
 
+// RegisterRoutes sets up the routes for the HomeController.
+// It registers the following endpoints:
+// - GET /home: Returns a simple string "bookfans.online".
+// - GET /home/ping: Pings the database and returns "pong" if successful, otherwise returns a 500 status code.
+//
+// Parameters:
+// - app: The Fiber application instance.
+// - db: The database instance to be used by the controller.
 func (h *HomeController) RegisterRoutes(app *fiber.App, db *data.Database) {
 
 	h.Database = db
