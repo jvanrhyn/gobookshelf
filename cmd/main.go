@@ -33,6 +33,7 @@ func main() {
 	slog.Debug("Initializing controllers")
 	controllers := []controller.ControllerInterface{
 		&controller.HomeController{},
+		&controller.UserController{},
 	}
 
 	for _, c := range controllers {
