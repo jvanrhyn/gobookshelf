@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"log/slog"
 
 	"github.com/gofiber/fiber/v2"
@@ -18,31 +19,55 @@ type (
 	UserController struct {
 		*fiber.App
 		Database *data.Database
-
-		User User
 	}
 )
 
 func (u *UserController) RegisterRoutes(app *fiber.App, db *data.Database) {
 
-	slog.Debug("Home controller registered")
+	slog.Debug("User controller registered")
 	u.Database = db
-	u.User = User{}
+	user := User{}
 	group := app.Group("/user")
 
 	group.Post("/register", func(c *fiber.Ctx) error {
 		slog.Debug("User controller called")
-		u.User.EmailAddress = c.FormValue("email")
+		user.EmailAddress = c.FormValue("email")
 
-		slog.Info("User registered with email: " + u.User.EmailAddress)
+		slog.Info("User registered with email: " + user.EmailAddress)
 
-		return c.SendString("User registered with email: " + u.User.EmailAddress)
+		return c.JSON("User registered with email: " + user.EmailAddress)
 	})
 
 	// Get user by ID
 
 	group.Get("/:id", func(c *fiber.Ctx) error {
 		slog.Debug("Getting user from database")
-		return c.SendString(u.User.FirstName + " " + u.User.LastName)
+
+		id := c.Params("id")
+		user, err := user.GetUserByID(id)
+		if err != nil {
+			slog.Error("Error retrieving user: " + err.Error())
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": "User not found",
+			})
+		}
+
+		return c.JSON(fiber.Map{
+			"full_name": user.FirstName + " " + user.LastName,
+		})
 	})
+
+}
+
+func (u *User) GetUserByID(id string) (User, error) {
+	// Pretend to get user from database
+	if id == "" { // Add check for invalid ID
+		return User{}, fmt.Errorf("invalid user ID")
+	}
+	return User{
+		EmailAddress: "johndoe@example.com",
+		FirstName:    "John",
+		LastName:     "Doe",
+		Age:          30,
+	}, nil
 }

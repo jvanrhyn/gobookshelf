@@ -5,3 +5,7 @@ type (
 		Message string
 	}
 )
+
+func (e RecordNotFoundError) Error() string {
+	return e.Message
+}
