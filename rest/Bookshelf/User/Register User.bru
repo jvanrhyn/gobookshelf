@@ -5,11 +5,16 @@ meta {
 }
 
 post {
-  url: http://localhost:8080/user/register?email=test@mail.com
-  body: none
+  url: http://localhost:8080/users
+  body: json
   auth: none
 }
 
-params:query {
-  email: test@mail.com
+body:json {
+  {
+    "email": "johan.vanrhyn@gmail.com",
+    "password": "securepassword123",
+    "firstName": "Johan",
+    "lastName": "van Rhyn"
+  }
 }
