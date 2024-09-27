@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log/slog"
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -21,25 +23,25 @@ type (
 	}
 
 	UserRepository struct {
-		DB *gorm.DB
+		GormDB *gorm.DB
 	}
 )
 
 func (repo *UserRepository) Create(user *User) error {
-	return repo.DB.Create(user).Error
+	return repo.GormDB.Create(user).Error
 }
 
 func (repo *UserRepository) Update(user *User) error {
-	return repo.DB.Save(user).Error
+	return repo.GormDB.Save(user).Error
 }
 
 func (repo *UserRepository) Delete(id uint) error {
-	return repo.DB.Delete(&User{}, id).Error
+	return repo.GormDB.Delete(&User{}, id).Error
 }
 
 func (repo *UserRepository) FindByID(id uint) (*User, error) {
 	var user User
-	if err := repo.DB.First(&user, id).Error; err != nil {
+	if err := repo.GormDB.First(&user, id).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -47,7 +49,7 @@ func (repo *UserRepository) FindByID(id uint) (*User, error) {
 
 func (repo *UserRepository) FindByEmail(email string) (*User, error) {
 	var user User
-	if err := repo.DB.Where("email = ?", email).First(&user).Error; err != nil {
+	if err := repo.GormDB.Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -55,7 +57,7 @@ func (repo *UserRepository) FindByEmail(email string) (*User, error) {
 
 func (repo *UserRepository) List() ([]User, error) {
 	var users []User
-	if err := repo.DB.Find(&users).Error; err != nil {
+	if err := repo.GormDB.Find(&users).Error; err != nil {
 		return nil, err
 	}
 	return users, nil
@@ -63,22 +65,45 @@ func (repo *UserRepository) List() ([]User, error) {
 
 func (h *UserController) RegisterRoutes() {
 	group := h.App.WebApp.Group("/users")
+
 	group.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
+		repo := UserRepository{GormDB: h.App.GormDB}
+		users, err := repo.List()
+		if err != nil {
+			slog.Error("Failed to retrieve users", "error", err)
+			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+		}
+		return c.JSON(users)
 	})
 
-	// Example routes for CRUD operations
+	group.Get("/:id", func(c *fiber.Ctx) error {
+		id, err := strconv.Atoi(c.Params("id"))
+		if err != nil {
+			slog.Error("Invalid user ID", "error", err)
+			return c.Status(fiber.StatusBadRequest).SendString("Invalid user ID")
+		}
+		repo := UserRepository{GormDB: h.App.GormDB}
+		user, err := repo.FindByID(uint(id))
+		if err != nil {
+			slog.Error("Failed to retrieve user", "error", err)
+			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+		}
+		return c.JSON(user)
+	})
+
 	group.Post("/", func(c *fiber.Ctx) error {
+		slog.Debug("Creating user", "request", c.Body())
 		var user User
 		if err := c.BodyParser(&user); err != nil {
+			slog.Error("Failed to parse request body", "error", err)
 			return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 		}
-		repo := UserRepository{DB: h.App.DB} // Assuming h.DB is your gorm.DB instance
+		repo := UserRepository{GormDB: h.App.GormDB} // Assuming h.DB is your gorm.DB instance
 		if err := repo.Create(&user); err != nil {
+			slog.Error("Failed to create user", "error", err)
 			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 		}
 		return c.Status(fiber.StatusCreated).JSON(user)
 	})
 
-	// Implement other CRUD routes (PUT, DELETE, GET by ID, etc.) similarly
 }

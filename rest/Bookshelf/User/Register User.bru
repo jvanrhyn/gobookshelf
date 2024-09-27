@@ -5,16 +5,16 @@ meta {
 }
 
 post {
-  url: http://localhost:8080/users
+  url: {{protocol}}://{{host}}:{{port}}/users
   body: json
   auth: none
 }
 
 body:json {
   {
-    "email": "johan.vanrhyn@gmail.com",
+    "email": "tester@gmail.com",
     "password": "securepassword123",
-    "firstName": "Johan",
-    "lastName": "van Rhyn"
+    "firstName": "Tester",
+    "lastName": "Tester"
   }
 }
