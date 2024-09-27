@@ -49,7 +49,7 @@ func main() {
 // set up the necessary routes.
 func mapControllers(application *Application) {
 	slog.Debug("Initializing controllers")
-	controllers := []controller.ControllerInterface{
+	controllers := []controller.Interface{
 		&HomeController{App: application},
 		&UserController{App: application},
 	}
@@ -113,7 +113,11 @@ func (a *Application) configureDatabase() error {
 	a.GormDB = db
 	slog.Info("Database connection established successfully")
 
-	a.GormDB.AutoMigrate(&User{})
+	err = a.GormDB.AutoMigrate(&User{})
+	if err != nil {
+		slog.Error("Database migration error", "error", err)
+		return err
+	}
 
 	return nil
 }

@@ -1,5 +1,5 @@
 package controller
 
-type ControllerInterface interface {
+type Interface interface {
 	RegisterRoutes()
 }
