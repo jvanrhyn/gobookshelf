@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"log/slog"
 	"strconv"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 func (h *UserController) RegisterRoutes() {
@@ -38,6 +39,12 @@ func (h *UserController) getById(c *fiber.Ctx) error {
 		slog.Error("Failed to retrieve user", "error", err)
 		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
+
+	if user == nil {
+		slog.Error("User not found", "id", id)
+		return c.Status(fiber.StatusNotFound).SendString("User not found")
+	}
+
 	return c.JSON(user)
 }
 

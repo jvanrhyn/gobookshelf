@@ -1,8 +1,11 @@
 package main
 
 import (
-	"gorm.io/gorm"
+	"log/slog"
 	"time"
+
+	"github.com/jvanrhyn/bookfans/internal"
+	"gorm.io/gorm"
 )
 
 type (
@@ -15,6 +18,7 @@ type (
 		PasswordHash string         `gorm:"not null"`
 		FirstName    string         `gorm:"size:100"`
 		LastName     string         `gorm:"size:100"`
+		EncodedID    string         `gorm:"-"`
 		// Add other fields as necessary
 	}
 
@@ -40,6 +44,14 @@ func (repo *UserRepository) FindByID(id uint) (*User, error) {
 	if err := repo.GormDB.First(&user, id).Error; err != nil {
 		return nil, err
 	}
+
+	eid, err := internal.EncodeID(int(user.ID), internal.ReverseSring(user.Email))
+	if err != nil {
+		slog.Error("Failed to encode user ID", "error", err)
+	}
+
+	user.EncodedID = eid
+
 	return &user, nil
 }
 
@@ -56,5 +68,15 @@ func (repo *UserRepository) List() ([]User, error) {
 	if err := repo.GormDB.Find(&users).Error; err != nil {
 		return nil, err
 	}
+
+	for i := range users {
+		eid, err := internal.EncodeID(int(users[i].ID), internal.ReverseSring(users[i].Email))
+		if err != nil {
+			slog.Error("Failed to encode user ID", "error", err)
+		}
+
+		users[i].EncodedID = eid
+	}
+
 	return users, nil
 }
