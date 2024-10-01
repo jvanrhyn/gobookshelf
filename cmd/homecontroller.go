@@ -4,6 +4,8 @@ import "github.com/gofiber/fiber/v2"
 
 func (h *HomeController) RegisterRoutes() {
 	group := h.App.WebApp.Group("/home")
+	group.Use(recoveryMiddleware)
+
 	group.Get("/", h.get)
 
 }

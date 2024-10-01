@@ -10,6 +10,8 @@ import (
 func (h *UserController) RegisterRoutes() {
 	group := h.App.WebApp.Group("/users")
 
+	group.Use(recoveryMiddleware)
+
 	group.Get("/", h.getAllUsers)
 	group.Get("/:id", h.getById)
 

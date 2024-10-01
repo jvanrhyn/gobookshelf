@@ -32,6 +32,9 @@ func main() {
 		Config: getConfig(),
 	}
 
+	// Add the recovery middleware
+	application.WebApp.Use(recoveryMiddleware)
+
 	// Configure the database on the application
 	if err := application.configureDatabase(); err != nil {
 		slog.Error("Failed to configure database", "error", err)
